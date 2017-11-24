@@ -35,7 +35,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         //如果找不到则返回null
         if (x == null) return null;
         int cmp = key.compareTo(x.key);
-        if      (cmp < 0) return get(x.left, key);  //如果key比比x的键小，则返回x的左子树，反之返回右子树
+        if      (cmp < 0) return get(x.left, key);  //如果key比x的键小，则返回x的左子树，反之返回右子树
         else if (cmp > 0) return get(x.right, key);
         else              return x.val;  //相等则表示查询到了，返回value
     }
@@ -130,5 +130,72 @@ public class BST<Key extends Comparable<Key>, Value> {
         if      (cmp < 0) return rank(key, x.left);
         else if (cmp > 0) return 1 + size(x.left) + rank(key, x.right);
         else              return size(x.left);
+    }
+
+    public void deleteMin(){
+        root = deleteMin(root);
+    }
+
+    private Node deleteMin(node x){
+        if (x.left == null) return x.right; //左子树为空说明已经是最小，将其右子树替换到它原来的位置
+        x.left = deleteMin(x.left);
+        x.N = size(x.left) + size(x.right) + 1;
+        return x;
+    }
+
+    public void deleteMax(){
+        root = deleteMax(root);
+    }
+
+    private Node deleteMax(Node x){
+        if (x.right == null) return x.left;
+        x.right = deleteMax(x.right);
+        x.N = size(x.left) + size(x.right) + 1;
+        return x;
+    }
+
+    public void delete(Key key){
+        root = delete(root, key);
+    }
+
+    private Node delete(Node x, Key key){
+        if (x == null) return null;  //找到最后，如果没找到，就算了？
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0)      x.left  = delete(x.left,  key);
+        else if (cmp > 0) x.right = delete(x.right, key);
+        else{
+            if (x.left == null) return x.right;
+            if (x.right == null) return x.left;
+            Node t = x;
+            x = min(t.right);  //找到该结点右子树中最小的，取代该节点
+            x.right = deleteMin(t.right);  //原来的右子树中去掉被作为新的根结点的结点，作为新的右子树
+            x.left = t.left; //左子树保持不变
+        }
+    }
+
+    private void print(Node x){
+        if (x == null) return;
+        print(x.left);
+        System.out.println(x.key);
+        print(x.right);
+    }
+
+    public Iterable<Key> keys(){
+        return keys(min(), max());
+    }
+
+    private Iterable<Key> keys(Key lo, Key hi){
+        Queue<Key> queue = new Queue<Key>();
+        keys(root, queue, lo, hi);
+        retern queue;
+    }
+
+    private void keys(Node x, Queue<Key> queue, Key lo, Key hi){
+        if (x == null) return;
+        int cmplo = lo.compareTo(x.key);
+        int cmphi = hi.compareTo(x.key);
+        if (cmplo < 0) keys(x.left, queue, lo, hi);
+        if (cmplo <= 0 && cmphi >= 0) queue.enqueue(x.key)
+        if (cmphi > 0) keys(x.right, queue, lo, hi);
     }
 }
