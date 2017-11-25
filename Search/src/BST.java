@@ -132,9 +132,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         else              return size(x.left);
     }
 
-<<<<<<< HEAD
 
-=======
     public void deleteMin(){
         root = deleteMin(root);
     }
@@ -201,5 +199,4 @@ public class BST<Key extends Comparable<Key>, Value> {
         if (cmplo <= 0 && cmphi >= 0) queue.enqueue(x.key)
         if (cmphi > 0) keys(x.right, queue, lo, hi);
     }
->>>>>>> 4791431bfa1f46a6baab21f68204a1238de480d2
 }
