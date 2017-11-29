@@ -34,11 +34,11 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     private Node rotateLeft(Node h){
-        Node x = h.right;
-        h.right = x.left;
-        x.left = h;
-        x.color = h.color;
-        h.color = RED;
+        Node x = h.right;             //            (E)h                      (S)
+        h.right = x.left;             //           /   \\                    //  \
+        x.left = h;                   //        (<E)     (S)x       ==>    (E)   (>S)
+        x.color = h.color;            //                /   \              /  \
+        h.color = RED;                //             (E-S)  (>S)         (<E) (E-S)
         x.N = h.N;
         h.N = 1 + size(h.left) + size(h.right);
         return x;
@@ -63,7 +63,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
 
     public void put(Key key, value val){
         root = put(root, key, val);
-        root.color = BLACK;
+        root.color = BLACK;  //根结点总是黑色的
     }
 
     private Node put(Node h, Key key, Value val){
@@ -72,11 +72,11 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         int cmp = key.compareTo(h.key);
         if      (cmp < 0) h.left = put(h.left, key, val);
         else if (cmp > 0) h.right = put(h.right, key, val);
-        else              h.val = val;
-
-        if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);
-        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);
-        if (isRed(h.left) && isRed(h.right))     flipColors(h);
+        else              h.val = val
+        //以下情况可看做在一个双键树（3-结点）中插入新建
+        if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);  //增加的结点在两值之间，挂在了较小结点的右侧，其父结点的右连接为红，左旋后变为下面的类型
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);  //增加的结点比两值都大，出现连续两个红色左连接，右旋后变为下面的类型
+        if (isRed(h.left) && isRed(h.right))     flipColors(h);  //增加的新键最小，连接在较大键的右连接，其父结点左右链接均为红色，做翻转颜色处理
 
         h.N = 1 + size(h.left) + size(h.right);
         return h;
