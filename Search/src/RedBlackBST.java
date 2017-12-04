@@ -95,4 +95,39 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         else if (cmp > 0) return get(x.right, key);
         else              return x.val;  //相等则表示查询到了，返回value
     }
+
+    private Node moveRedLeft(Node h){
+        flipColors(h);
+        if (isRed(h.right.left)){
+            h.right = rotateRight(h.right);
+            h = rotateLeft(h);
+        }
+        return h;
+    }
+
+    public void deleteMin(){
+        if (!isRed(root.left) && !isRed(root.right))
+            root.color = RED;
+        root = deleteMin(h.left);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    public Node deleteMin(Node h){
+        if (h.left == null)
+            return null;
+        if (!isRed(h.left) && !isRed(h.left.left))
+            h = moveRedLeft(h);
+        return balance(h);
+    }
+
+    private balance(Node h){
+        if isRed(h.right) h = rotateLeft(h);
+        //以下情况可看做在一个双键树（3-结点）中插入新建
+        if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);  //增加的结点在两值之间，挂在了较小结点的右侧，其父结点的右连接为红，左旋后变为下面的类型
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);  //增加的结点比两值都大，出现连续两个红色左连接，右旋后变为下面的类型
+        if (isRed(h.left) && isRed(h.right))     flipColors(h);  //增加的新键最小，连接在较大键的右连接，其父结点左右链接均为红色，做翻转颜色处理
+
+        h.N = 1 + size(h.left) + size(h.right);
+        return h;
+    }
 }
