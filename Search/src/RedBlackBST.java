@@ -33,6 +33,10 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         return x.color == RED;
     }
 
+    private boolean isEmpty(){
+        return size(root) == 0;
+    }
+
     private Node rotateLeft(Node h){
         Node x = h.right;             //            (E)h                      (S)
         h.right = x.left;             //           /   \\                    //  \
@@ -98,24 +102,24 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
 
     private Node moveRedLeft(Node h){
         flipColors(h);
-        if (isRed(h.right.left)){
-            h.right = rotateRight(h.right);
+        if (isRed(h.right.left)){  //如果右子结点为3-结点
+            h.right = rotateRight(h.right);  
             h = rotateLeft(h);
         }
         return h;
     }
 
     public void deleteMin(){
-        if (!isRed(root.left) && !isRed(root.right))
+        if (!isRed(root.left) && !isRed(root.right))  //如果左右链接均为黑，这是一个2-结点，根结点连接设为红，后续进行变色
             root.color = RED;
         root = deleteMin(h.left);
         if (!isEmpty()) root.color = BLACK;
     }
 
     public Node deleteMin(Node h){
-        if (h.left == null)
+        if (h.left == null)  //一直向左找到最后一个结点
             return null;
-        if (!isRed(h.left) && !isRed(h.left.left))
+        if (!isRed(h.left) && !isRed(h.left.left))  //如果该结点与其左子结点均为2-结点，还要判断其右结点类型
             h = moveRedLeft(h);
         return balance(h);
     }
