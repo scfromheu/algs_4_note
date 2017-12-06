@@ -65,6 +65,12 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         h.right.color = BLACK;
     }
 
+    private void flipColorsDelete(Node h){
+        h.color = BLACK;
+        h.left.color = RED;
+        h.right.color = RED;
+    }
+
     public void put(Key key, value val){
         root = put(root, key, val);
         root.color = BLACK;  //根结点总是黑色的
@@ -101,10 +107,11 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     private Node moveRedLeft(Node h){
-        flipColors(h);
+        flipColorsDelete(h); //左右节点均为黑（2-节点）的话，则将其转化为一个4-结点，
         if (isRed(h.right.left)){  //如果右子结点为3-结点
-            h.right = rotateRight(h.right);  
-            h = rotateLeft(h);
+            h.right = rotateRight(h.right);  //右边的3或4-结点的最左边变换到顶部，h变为顶部的左结点
+            h = rotateLeft(h);  //h再换到左边的节点中，左边变为3-结点
+            flipColors(h);  //颜色再变回来，这里原书答案似乎有误
         }
         return h;
     }
@@ -112,7 +119,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     public void deleteMin(){
         if (!isRed(root.left) && !isRed(root.right))  //如果左右链接均为黑，这是一个2-结点，根结点连接设为红，后续进行变色
             root.color = RED;
-        root = deleteMin(h.left);
+        root = deleteMin(root); 
         if (!isEmpty()) root.color = BLACK;
     }
 
@@ -121,15 +128,15 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
             return null;
         if (!isRed(h.left) && !isRed(h.left.left))  //如果该结点与其左子结点均为2-结点，还要判断其右结点类型
             h = moveRedLeft(h);
-        return balance(h);
+        return balance(h); 
     }
 
-    private balance(Node h){
-        if isRed(h.right) h = rotateLeft(h);
-        //以下情况可看做在一个双键树（3-结点）中插入新建
-        if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);  //增加的结点在两值之间，挂在了较小结点的右侧，其父结点的右连接为红，左旋后变为下面的类型
-        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);  //增加的结点比两值都大，出现连续两个红色左连接，右旋后变为下面的类型
-        if (isRed(h.left) && isRed(h.right))     flipColors(h);  //增加的新键最小，连接在较大键的右连接，其父结点左右链接均为红色，做翻转颜色处理
+    private balance(Node h){  //向上分解4-结点，方法与put()相同
+        if isRed(h.right) h = rotateLeft(h);  //这里做连接肯定是红的，可以不写
+        
+        //if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);  
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);  
+        if (isRed(h.left) && isRed(h.right))     flipColors(h); 
 
         h.N = 1 + size(h.left) + size(h.right);
         return h;
