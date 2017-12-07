@@ -60,16 +60,16 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     private void flipColors(Node h){
-        h.color = RED;
-        h.left.color = BLACK;
-        h.right.color = BLACK;
+        h.color = !h.color;
+        h.left.color = !h.left.color;
+        h.right.color = !h.right.color;
     }
 
-    private void flipColorsDelete(Node h){
-        h.color = BLACK;
-        h.left.color = RED;
-        h.right.color = RED;
-    }
+    // private void flipColorsDelete(Node h){
+    //     h.color = BLACK;
+    //     h.left.color = RED;
+    //     h.right.color = RED;
+    // }
 
     public void put(Key key, value val){
         root = put(root, key, val);
@@ -107,7 +107,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     private Node moveRedLeft(Node h){
-        flipColorsDelete(h); //左右节点均为黑（2-节点）的话，则将其转化为一个4-结点，
+        flipColors(h); //左右节点均为黑（2-节点）的话，则将其转化为一个4-结点，
         if (isRed(h.right.left)){  //如果右子结点为3-结点
             h.right = rotateRight(h.right);  //右边的3或4-结点的最左边变换到顶部，h变为顶部的左结点
             h = rotateLeft(h);  //h再换到左边的节点中，左边变为3-结点
@@ -140,5 +140,31 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
 
         h.N = 1 + size(h.left) + size(h.right);
         return h;
+    }
+
+    private Node moveRedRight(Node h){
+        flipColors(h);
+        if (isRed(h.left.left))  //此处原书中似乎有误，当左侧是3-结点时，将多出的结点转移给右边，右边变为右红连接的3-结点
+            h = rotateRight(h);
+            flipColors(h);
+        return h;
+    }
+
+    public void deleteMax(){
+        if (!isRed(root.left) && !isRed(root.left))
+            root.color = RED;
+        root = deleteMax(root);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    private Node deleteMin(Node h){
+        if (!isRed(h.left))  //对称于deleteMin(), 这里将右边遇到的红色左连接都转化为红色右连接， 逻辑上保持一致
+            h = rotateRight(h);
+        if (h.right == null)
+            return null;
+        if (!isRed(h.right) && !isRed(h.right.left))  //该结点和右子结点都是2-结点
+            h = moveRedRight(h)
+        h.right = deleteMax(h.right);
+        return(balance(h));
     }
 }
