@@ -37,7 +37,85 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         return size(root) == 0;
     }
 
-    private Node rotateLeft(Node h){
+    //----以下区域里代码和二叉树没区别--------
+    public Key min(){
+        return min(root).key;
+    }
+
+    private Node min(Node x){
+        if (x.left == null) return x;
+        return min(x.left);
+    }
+
+    public Key max(){
+        return max(root).key;
+    }
+
+    private Node max(Node x){
+        if (x.right == null) return x;
+        return max(x.right);
+    }
+
+    public Key floor(Key key){
+        //找到小于等于key的最大键
+        Node x = floor(root, key);
+        if (x == null) return null;
+        return x.key;
+    }
+
+    private Node floor(Node x, Key key){
+        if (x == null) return null;
+        int cmp = key.compareTo(x.key);
+        if (cmp == 0) return x;
+        if (cmp < 0) return floor(x.left, key);  //比当前结点键还小，则继续向左子树中寻找
+        Node t = floor(x.right, key);  //比当前结点大，同时比父结点小，则应返回当前右子树根节点，右为空则返回自身
+        if (t != null) return t;
+        else           return x;
+    }
+
+    public Key ceiling(Key key){
+        //找到大于等于key的最大键
+        Node x = ceiling(root, key);
+        if (x == null) return null;
+        return x.key;
+    }
+
+    private Node ceiling(Node x, Key key){
+        if (x == null) return null;
+        int cmp = key.compareTo(x.key);
+        if (cmp == 0) return x;
+        if (cmp > 0) return ceiling(x.right, key);  //比当前结点键还大，则继续向右子树中寻找
+        Node t = ceiling(x.left, key);  //比当前结点小，同时比父结点大，则应返回当前左子树根节点，右为空则返回自身
+        if (t != null) return t;
+        else           return x;
+    }
+
+    public Key select(int k){
+        return select(root, k).key;
+    }
+
+    private Node select(Node x, int k){
+        if (x == null) return null;
+        int t = size(x.left);
+        if      (t > k) return select(x.left, k);
+        else if (t < k) return select(x.right, k-t-1);
+        else            return x;
+    }
+
+    public int rank(Key key){
+        return rank(key, root);
+    }
+
+    private int rank(Key key, Node x){
+        if (x == null) return 0;
+        int cmp = key.compareTo(x.key);
+        if      (cmp < 0) return rank(key, x.left);
+        else if (cmp > 0) return 1 + size(x.left) + rank(key, x.right);
+        else              return size(x.left);
+    }
+    //----以上区域里代码和二叉树没区别--------
+
+    private Node rotateLeft(Node h){  //主要目的是把左面的红连接搞到右边去，红连接两边的结点不变
         Node x = h.right;             //            (E)h                      (S)
         h.right = x.left;             //           /   \\                    //  \
         x.left = h;                   //        (<E)     (S)x       ==>    (E)   (>S)
@@ -64,12 +142,6 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         h.left.color = !h.left.color;
         h.right.color = !h.right.color;
     }
-
-    // private void flipColorsDelete(Node h){
-    //     h.color = BLACK;
-    //     h.left.color = RED;
-    //     h.right.color = RED;
-    // }
 
     public void put(Key key, value val){
         root = put(root, key, val);
@@ -106,7 +178,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         else              return x.val;  //相等则表示查询到了，返回value
     }
 
-    private Node moveRedLeft(Node h){
+    private Node moveRedLeft(Node h){  //主要目的是把右子结点的红连接转移到左边，保证左子结点至少是3-结点，不会删光
         flipColors(h); //左右节点均为黑（2-节点）的话，则将其转化为一个4-结点，
         if (isRed(h.right.left)){  //如果右子结点为3-结点
             h.right = rotateRight(h.right);  //右边的3或4-结点的最左边变换到顶部，h变为顶部的左结点
@@ -157,14 +229,44 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         if (!isEmpty()) root.color = BLACK;
     }
 
-    private Node deleteMin(Node h){
-        if (!isRed(h.left))  //对称于deleteMin(), 这里将右边遇到的红色左连接都转化为红色右连接， 逻辑上保持一致
+    private Node deleteMax(Node h){
+        if (!isRed(h.left))  //对称于deleteMin(), 这里将右边遇到的红色左连接都转化为红色右连接，逻辑上保持一致
             h = rotateRight(h);
         if (h.right == null)
             return null;
-        if (!isRed(h.right) && !isRed(h.right.left))  //该结点和右子结点都是2-结点
+        if (!isRed(h.right) && !isRed(h.right.left))  //该结点和右子结点都是2-结点，变成4-结点或把左侧的红连接右移
             h = moveRedRight(h)
         h.right = deleteMax(h.right);
         return(balance(h));
+    }
+
+    public void delete(Key key){  //和前面的一样
+        if (!isRed(root.left) && !isRed(root.right))
+            root.color = RED;
+        root = delete(root, key);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    private Node delete(Node h, Key key){
+        if (key.compareTo(h.key) < 0){  //如果比当前的key小，向左继续寻找，处理方法和deleteMin()类似
+            if (!isRed(h.left) && !isRed(h.right))
+                h = moveRedLeft(h);
+            h.left = delete(h.left, key);
+        }
+        else{  //如果不比当前小，那么考虑删除该结点或向右发展
+            if (isRed(h.left))  //类似于deleteMax()
+                h = rotateRight(h);
+            if (key.compareTo(h.key = 0) && (h.right == null))  //键相等时，还要考虑是否是最后一个结点
+                return null;  //是最后一个结点则直接删除
+            if (!isRed(h.right) && !isRed(h.right.left))  //该结点和右子结点都是2-结点
+                h = moveRedRight(h);
+            if (key.compareTo(h.key) == 0){  //不是最小的，但右侧结点都已调整过，可以放心删除了
+                h.val = get(h.right, min(h.right).key);  //用其右结点下最小的结点替换它，保证右边的都比它大
+                h.key = min(h.right).key;
+                h.right = deleteMin(h.right);
+            }
+            else h.right = delete(h.right, key);  //如果不等（比该结点大），那就继续向右寻找
+        }
+        return balance(h);
     }
 }
