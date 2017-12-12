@@ -204,7 +204,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     private balance(Node h){  //向上分解4-结点，方法与put()相同
-        if isRed(h.right) h = rotateLeft(h);  //这里做连接肯定是红的，可以不写
+        if isRed(h.right) h = rotateLeft(h);  // 如果右连接为红，往左转
         
         //if (isRed(h.right) && !isRed(h.left))    h = rotateLeft(h);  
         if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);  
