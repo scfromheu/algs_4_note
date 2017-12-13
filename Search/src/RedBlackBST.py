@@ -1,5 +1,6 @@
 
 class Node(object):
+    """the node of a RedBlackBST"""
     def __init__(self, key, val, size, color):
         self.key = key
         self.val = val
@@ -241,6 +242,69 @@ class RedBlackBST(object):
             self._rotate_right(node)
         if self._is_red(node.left) and self._is_red(node.right):
             self._flip_colors(node)
-    
         node.size = 1 + self._size(node.left) + self._size(node.right)
         return node
+
+    def delete_min(self):
+        """delete the minimum key"""
+        if not self._is_red(self._root.left) and not self._is_red(self._root.right):
+            self._root.color = self._RED
+        self._root = self._delete_min(self._root)
+        if not self._is_empty(self._root):
+            self._root.color = self._BLACK
+
+    def _delete_min(self, node):
+        if not node.left:
+            return None
+        if not self._is_red(node.left) and not self._is_red(node.left.left):
+            node = self._move_red_left(node)
+        return self._balance(node)
+
+    def delete_max(self):
+        """delete the maximum key"""
+        if not self._is_red(self._root.left) and not self._is_red(self._root.right):
+            self._root.color = self._RED
+        self._root = self._delete_max(self._root)
+        if not self._is_empty(self._root):
+            self._root.color = self._BLACK
+
+    def _delete_max(self, node):
+        if self._is_red(node.left):
+            node = self._rotate_right(node)
+        if not node.right:
+            return None
+        if not self._is_red(node.right) and not self._is_red(node.right.left):
+            node = self._move_red_right(node)
+        node.right = self._delete_max(node.right)
+        return self._balance(node)
+    
+    def delete(self, key):
+        """delete the node by the given key"""
+        if not self._is_red(self._root.left) and not self._is_red(self._root.right):
+            self._root.color = self._RED
+        self._root = self._delete(self._root, key)
+        if not self._is_empty(self._root):
+            self._root.color = self._BLACK 
+
+    def _delete(self, node, key):
+        if key < node.key:
+            if not self._is_red(node.left) and not self._is_red(node.left):
+                node = self._move_red_left(node)
+            node.left = self._delete(node.left, key)
+
+        else:
+            if self._is_red(node.left):
+                node = self._rotate_right(node)
+            if k == node.key and not node.right:
+                return None
+            if not self._is_red(node.right) and not self._is_red(node.right.left):
+                node = self._move_red_right(node)
+            if key == node.key:
+                node.val = self._get(node.right, min(node.right).key)
+                node.key = min(node.right).key
+                node.right = self._delete_min(node.right)
+            else:
+                node.right = self._delete(node.right, key)
+
+        return self._balance(node)
+    

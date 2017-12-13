@@ -195,7 +195,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
         if (!isEmpty()) root.color = BLACK;
     }
 
-    public Node deleteMin(Node h){
+    private Node deleteMin(Node h){
         if (h.left == null)  //一直向左找到最后一个结点
             return null;
         if (!isRed(h.left) && !isRed(h.left.left))  //如果该结点与其左子结点均为2-结点，还要判断其右结点类型
@@ -223,7 +223,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value>{
     }
 
     public void deleteMax(){
-        if (!isRed(root.left) && !isRed(root.left))
+        if (!isRed(root.left) && !isRed(root.right))
             root.color = RED;
         root = deleteMax(root);
         if (!isEmpty()) root.color = BLACK;
